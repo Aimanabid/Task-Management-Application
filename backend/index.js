@@ -75,7 +75,7 @@ app.post('/create', verifyUser, async (req, res) => {
     }
 });
 // Read tasks for a specific user
-app.get('/read', verifyUser, async (req, res) => {
+app.get('/read', verifyUser,  async (req, res) => {
     try {
         const tasks = await Task.find({ userId: req.userId }); // Filter by user ID
         res.status(200).send(tasks); // Send back user's tasks
@@ -87,7 +87,7 @@ app.get('/read', verifyUser, async (req, res) => {
 
 
 // Update a task's status
-app.put('/updateTask/:id', async (req, res) => {
+app.put('/updateTask/:id', verifyUser, async (req, res) => {
     const { id } = req.params;
     const { title, message } = req.body;
   
@@ -105,7 +105,7 @@ app.put('/updateTask/:id', async (req, res) => {
   });
 
 // Delete a task
-app.delete('/deleteTask/:id', async (req, res) => {
+app.delete('/deleteTask/:id',verifyUser, async (req, res) => {
     try {
         const result = await Task.deleteOne({ _id: req.params.id, userId: req.userId }); // Assuming you're using _id as the unique identifier for tasks
         
@@ -122,13 +122,54 @@ app.delete('/deleteTask/:id', async (req, res) => {
 
 
 // Token verification middleware
-function verifyToken(req, res, next) {
-    const bearerHeader = req.headers['authorization'];
+// function verifyToken(req, res, next) {
+//     const bearerHeader = req.headers['authorization'];
     
+//     if (typeof bearerHeader !== 'undefined') {
+//         const token = bearerHeader.split(" ")[1];
+//         req.token = token;
+        
+//         jwt.verify(token, jwtkey, (err, authData) => {
+//             if (err) {
+//                 if (err.name === 'TokenExpiredError') {
+//                     return res.status(401).send({ result: 'Token Expired' });
+//                 } else {
+//                     return res.status(403).send({ result: 'Invalid or Modified Token' });
+//                 }
+//             }
+//             req.authData = authData;
+//             next();
+//         });
+//     } else {
+//         res.status(403).send({ result: 'Token not provided' });
+//     }
+// }
+// function verifyUser(req, res, next) {
+//     const bearerHeader = req.headers['authorization'];
+//     if (bearerHeader) {
+//         const token = bearerHeader.split(" ")[1];
+//         jwt.verify(token, jwtkey, (err, authData) => {
+//             if (err) {
+//                 console.log(err)
+//                 return res.status(403).send({ result: 'Unauthorized: Invalid token' });
+//             } else {
+//                 req.userId = authData.result._id; // Store user ID for route use
+//                 console.log("User ID:", req.userId); // Add this line for debugging
+//                 next();
+//             }
+//         });
+//     } else {
+//         res.status(403).send({ result: 'Token Not Found' });
+//     }
+// }
+
+function verifyUser(req, res, next) {
+    const bearerHeader = req.headers['authorization'];
+
     if (typeof bearerHeader !== 'undefined') {
         const token = bearerHeader.split(" ")[1];
         req.token = token;
-        
+
         jwt.verify(token, jwtkey, (err, authData) => {
             if (err) {
                 if (err.name === 'TokenExpiredError') {
@@ -138,27 +179,11 @@ function verifyToken(req, res, next) {
                 }
             }
             req.authData = authData;
+            req.userId = authData.result._id; // Store user ID for route use
             next();
         });
     } else {
         res.status(403).send({ result: 'Token not provided' });
-    }
-}
-function verifyUser(req, res, next) {
-    const bearerHeader = req.headers['authorization'];
-    if (bearerHeader) {
-        const token = bearerHeader.split(" ")[1];
-        jwt.verify(token, jwtkey, (err, authData) => {
-            if (err) {
-                return res.status(403).send({ result: 'Unauthorized: Invalid token' });
-            } else {
-                req.userId = authData.result._id; // Store user ID for route use
-                console.log("User ID:", req.userId); // Add this line for debugging
-                next();
-            }
-        });
-    } else {
-        res.status(403).send({ result: 'Token Not Found' });
     }
 }
 
