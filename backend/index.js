@@ -62,25 +62,29 @@ app.post('/login', async (req, res) => {
 });
 
 // Create a task
-app.post('/create', async (req, res) => {
+app.post('/create', verifyUser, async (req, res) => {
     try {
-        const taskData = new Task(req.body);
-        const result = await taskData.save();
-        res.status(201).json(result); // 201 Created
+        const newTask = new Task({
+            ...req.body,
+            userId: req.userId, // Link task to user ID
+        });
+        const savedTask = await newTask.save();
+        res.status(201).json(savedTask);
     } catch (error) {
-        res.status(400).json({ message: error.message }); // 400 Bad Request
+        res.status(500).send({ message: 'Failed to create task' });
+    }
+});
+// Read tasks for a specific user
+app.get('/read', verifyUser, async (req, res) => {
+    try {
+        const tasks = await Task.find({ userId: req.userId }); // Filter by user ID
+        res.status(200).send(tasks); // Send back user's tasks
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+        res.status(500).json({ message: 'Failed to fetch tasks' });
     }
 });
 
-// Read all tasks
-app.get('/read', async (req, res) => {
-    try {
-        const tasks = await Task.find({});
-        res.status(200).json(tasks); // 200 OK
-    } catch (error) {
-        res.status(500).json({ message: error.message }); // 500 Internal Server Error
-    }
-});
 
 // Update a task's status
 app.put('/updateTask/:id', async (req, res) => {
@@ -88,11 +92,11 @@ app.put('/updateTask/:id', async (req, res) => {
     const { title, message } = req.body;
   
     try {
-      const updatedTask = await Task.findByIdAndUpdate(
-        id,
-        { title, message },
-        { new: true }
-      );
+        const updatedTask = await Task.findOneAndUpdate(
+            { _id: id, userId: req.userId }, // Check if task belongs to the user
+            { title, message },
+            { new: true }
+        );
       res.json(updatedTask);
     } catch (error) {
       console.error('Error updating task:', error);
@@ -103,7 +107,7 @@ app.put('/updateTask/:id', async (req, res) => {
 // Delete a task
 app.delete('/deleteTask/:id', async (req, res) => {
     try {
-        const result = await Task.deleteOne({ _id: req.params.id }); // Assuming you're using _id as the unique identifier for tasks
+        const result = await Task.deleteOne({ _id: req.params.id, userId: req.userId }); // Assuming you're using _id as the unique identifier for tasks
         
         if (result.deletedCount === 1) {
             res.status(200).send({ message: 'Task deleted successfully' });
@@ -140,6 +144,24 @@ function verifyToken(req, res, next) {
         res.status(403).send({ result: 'Token not provided' });
     }
 }
+function verifyUser(req, res, next) {
+    const bearerHeader = req.headers['authorization'];
+    if (bearerHeader) {
+        const token = bearerHeader.split(" ")[1];
+        jwt.verify(token, jwtkey, (err, authData) => {
+            if (err) {
+                return res.status(403).send({ result: 'Unauthorized: Invalid token' });
+            } else {
+                req.userId = authData.result._id; // Store user ID for route use
+                console.log("User ID:", req.userId); // Add this line for debugging
+                next();
+            }
+        });
+    } else {
+        res.status(403).send({ result: 'Token Not Found' });
+    }
+}
+
 
 
 app.listen(5000, () => {
