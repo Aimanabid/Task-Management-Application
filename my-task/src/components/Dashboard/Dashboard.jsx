@@ -12,7 +12,10 @@ const Dashboard = () => {
       try {
         const response = await fetch('http://localhost:5000/read'); // Read tasks
         const data = await response.json();
-        setTasks(data);
+        
+        console.log('Fetched tasks:', data); // Log the data to see the structure
+        // Assuming your response is structured like { tasks: [...] }
+        setTasks(Array.isArray(data) ? data : data.tasks || []); // Set to empty array if not an array
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
@@ -33,12 +36,18 @@ const Dashboard = () => {
           body: JSON.stringify(task),
         });
 
+        if (!response.ok) {
+          throw new Error('Failed to add task');
+        }
+
         const newTask = await response.json();
         setTasks([...tasks, newTask]);
         setTask({ title: '', message: '', status: false }); // Reset form
       } catch (error) {
         console.error('Error adding task:', error);
       }
+    } else {
+      console.warn('Please provide both title and message for the task.');
     }
   };
 
@@ -56,54 +65,50 @@ const Dashboard = () => {
 
   return (
     <div className="container-fluid">
-    <div>
-      <div className="row">
-        <Sidebar/>
-        <div className="col-10 main-content">
-          <header className="header">
-            <h3 className='text-center p-3 welcomeheading'>Welcome to the Task Management Dashboard</h3>
-          </header>
-          <div>
-            <label htmlFor="title" className='form-label text-center w-75'>Task Title:</label>
-            <input 
-              id="title" 
-              value={task.title} 
-              onChange={(e) => setTask({ ...task, title: e.target.value })} 
-              className='form-control border-dark w-100'
-            />
-            <label htmlFor="message" className='form-label text-center w-75 mt-2'>Task Message:</label>
-            <textarea 
-              id="message" 
-              value={task.message} 
-              onChange={(e) => setTask({ ...task, message: e.target.value })} 
-              className='form-control border-dark w-100' 
-             
-            />
-            <button className='btn btn-primary mt-2' onClick={handleAddTask}>Add Task</button>
-          </div>
-          <div className="task-list mt-4">
-            <h4>Your Tasks Title:</h4>
-            <ul className='list-group'>
-              {tasks.map((t) => (
-                <li key={t._id} className='list-group-item d-flex justify-content-between align-items-center'>
-                  <span>
-                    {t.title} 
-                  </span>
-                  <div>
-                    <button className='btn btn-danger btn-sm ml-2' onClick={() => handleDeleteTask(t._id)}>
-                      Delete
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+      <div>
+        <div className="row">
+          <Sidebar />
+          <div className="col-10 main-content">
+            <header className="header">
+              <h3 className='text-center p-3 welcomeheading'>Welcome to the Task Management Dashboard</h3>
+            </header>
+            <div>
+              <label htmlFor="title" className='form-label text-center w-75'>Task Title:</label>
+              <input
+                id="title"
+                value={task.title}
+                onChange={(e) => setTask({ ...task, title: e.target.value })}
+                className='form-control border-dark w-100'
+              />
+              <label htmlFor="message" className='form-label text-center w-75 mt-2'>Task Message:</label>
+              <textarea
+                id="message"
+                value={task.message}
+                onChange={(e) => setTask({ ...task, message: e.target.value })}
+                className='form-control border-dark w-100'
+              />
+              <button className='btn btn-primary mt-2' onClick={handleAddTask}>Add Task</button>
+            </div>
+            <div className="task-list mt-4">
+              <h4>Your Tasks Title:</h4>
+              <ul className='list-group'>
+                {Array.isArray(tasks) && tasks.map((t) => (
+                  <li key={t._id} className='list-group-item d-flex justify-content-between align-items-center'>
+                    <span>{t.title}</span>
+                    <div>
+                      <button className='btn btn-danger btn-sm ml-2' onClick={() => handleDeleteTask(t._id)}>
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    </div>
   );
 };
-
 
 export default Dashboard;
