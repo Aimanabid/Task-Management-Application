@@ -10,10 +10,21 @@ const MyTasks = () => {
   // Fetch tasks from API
   const getdata = async () => {
     try {
-      const result = await axios.get('http://localhost:5000/read');
-      setTasks(result.data);
+      const token = localStorage.getItem('token'); // Get the token from local storage
+      const response = await fetch('http://localhost:5000/read', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`, // Pass the token in the header
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      console.log('Fetched tasks:', data); // Log the data to see the structure
+      // Assuming your response is structured like { tasks: [...] }
+      setTasks(Array.isArray(data) ? data : data.tasks || []); // Set to empty array if not an array
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching tasks:', error);
     }
   };
 
@@ -23,15 +34,38 @@ const MyTasks = () => {
 
   // Update task in the database
   const handleUpdateTask = async (taskId) => {
+    console.log('Saving task with ID:', taskId);
+    console.log('Edit task data:', editTask); // Log the editTask object
+
     try {
-      const response = await axios.put(`http://localhost:5000/updateTask/${taskId}`, editTask);
-      setTasks(tasks.map((task) => (task._id === taskId ? response.data : task)));
-      setEditMode(null); // Exit edit mode
-      setEditTask({ title: '', message: '' }); // Reset edit form
+        // Get the token from local storage
+        const token = localStorage.getItem('token');
+
+        // Make the PUT request with the token in headers
+        const response = await axios.put(`http://localhost:5000/updateTask/${taskId}`, editTask, {
+            headers: {
+                'Authorization': `Bearer ${token}`, // Pass the token in the header
+                'Content-Type': 'application/json', // Ensure the correct content type is set
+            },
+        });
+        console.log('Updated task response:', response.data); // Log response
+
+        // Update the tasks state with the newly updated task
+        const updatedTask = { ...response.data }; // Ensure you have the updated task
+        setTasks((prevTasks) =>
+            prevTasks.map((task) => (task._id === taskId ? updatedTask : task))
+        );
+
+        // Exit edit mode and reset the edit form
+        setEditMode(null);
+        setEditTask({ title: '', message: '' });
     } catch (error) {
-      console.error('Error updating task:', error);
+        console.error('Error updating task:', error.response?.data || error.message);
     }
-  };
+};
+
+
+
 
   return (
     <div className="container-fluid">
