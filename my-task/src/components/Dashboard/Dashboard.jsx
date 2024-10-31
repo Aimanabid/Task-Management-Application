@@ -10,9 +10,16 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch('http://localhost:5000/read'); // Read tasks
+        const token = localStorage.getItem('token'); // Get the token from local storage
+        const response = await fetch('http://localhost:5000/read', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`, // Pass the token in the header
+            'Content-Type': 'application/json',
+          },
+        });
+
         const data = await response.json();
-        
         console.log('Fetched tasks:', data); // Log the data to see the structure
         // Assuming your response is structured like { tasks: [...] }
         setTasks(Array.isArray(data) ? data : data.tasks || []); // Set to empty array if not an array
@@ -28,9 +35,11 @@ const Dashboard = () => {
   const handleAddTask = async () => {
     if (task.title && task.message) {
       try {
+        const token = localStorage.getItem('token'); // Get the token from local storage
         const response = await fetch('http://localhost:5000/create', {
           method: 'POST',
           headers: {
+            'Authorization': `Bearer ${token}`, // Pass the token in the header
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(task),
@@ -54,8 +63,12 @@ const Dashboard = () => {
   // Delete a task
   const handleDeleteTask = async (taskId) => {
     try {
-      await fetch(`http://localhost:5000/deleteTask/${taskId}`, { // Use the new delete endpoint
+      const token = localStorage.getItem('token'); // Get the token from local storage
+      await fetch(`http://localhost:5000/deleteTask/${taskId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`, // Pass the token in the header
+        },
       });
       setTasks(tasks.filter(t => t._id !== taskId)); // Remove from state using taskId
     } catch (error) {
