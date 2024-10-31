@@ -25,6 +25,8 @@ const Login = () => {
         password: password,
     });
       if (result.status === 200) {
+        console.log(result.data)
+        localStorage.setItem('token', result.data.auth);
         toast.success('Logged In Successfully');
 
         setTimeout(() => {
