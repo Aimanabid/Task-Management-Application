@@ -187,6 +187,7 @@ app.get('/elapsedTime/:id', verifyUser, async (req, res) => {
 
 
 
+<<<<<<< HEAD
 // Token verification middleware
 // function verifyToken(req, res, next) {
 //     const bearerHeader = req.headers['authorization'];
@@ -228,6 +229,9 @@ app.get('/elapsedTime/:id', verifyUser, async (req, res) => {
 //         res.status(403).send({ result: 'Token Not Found' });
 //     }
 // }
+=======
+
+>>>>>>> c5e08f40d85544538d87006b203b59cb5ccb3b46
 
 function verifyUser(req, res, next) {
     const bearerHeader = req.headers['authorization'];

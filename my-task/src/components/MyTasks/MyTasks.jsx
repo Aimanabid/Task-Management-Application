@@ -34,6 +34,11 @@ const MyTasks = () => {
 
   // Update task in the database
   const handleUpdateTask = async (taskId) => {
+<<<<<<< HEAD
+=======
+    console.log('Saving task with ID:', taskId);
+    console.log('Edit task data:', editTask); // Log the editTask object
+>>>>>>> c5e08f40d85544538d87006b203b59cb5ccb3b46
 
     try {
         // Get the token from local storage
