@@ -184,55 +184,6 @@ app.get('/elapsedTime/:id', verifyUser, async (req, res) => {
     }
 });
 
-
-
-
-<<<<<<< HEAD
-// Token verification middleware
-// function verifyToken(req, res, next) {
-//     const bearerHeader = req.headers['authorization'];
-    
-//     if (typeof bearerHeader !== 'undefined') {
-//         const token = bearerHeader.split(" ")[1];
-//         req.token = token;
-        
-//         jwt.verify(token, jwtkey, (err, authData) => {
-//             if (err) {
-//                 if (err.name === 'TokenExpiredError') {
-//                     return res.status(401).send({ result: 'Token Expired' });
-//                 } else {
-//                     return res.status(403).send({ result: 'Invalid or Modified Token' });
-//                 }
-//             }
-//             req.authData = authData;
-//             next();
-//         });
-//     } else {
-//         res.status(403).send({ result: 'Token not provided' });
-//     }
-// }
-// function verifyUser(req, res, next) {
-//     const bearerHeader = req.headers['authorization'];
-//     if (bearerHeader) {
-//         const token = bearerHeader.split(" ")[1];
-//         jwt.verify(token, jwtkey, (err, authData) => {
-//             if (err) {
-//                 console.log(err)
-//                 return res.status(403).send({ result: 'Unauthorized: Invalid token' });
-//             } else {
-//                 req.userId = authData.result._id; // Store user ID for route use
-//                 console.log("User ID:", req.userId); // Add this line for debugging
-//                 next();
-//             }
-//         });
-//     } else {
-//         res.status(403).send({ result: 'Token Not Found' });
-//     }
-// }
-=======
-
->>>>>>> c5e08f40d85544538d87006b203b59cb5ccb3b46
-
 function verifyUser(req, res, next) {
     const bearerHeader = req.headers['authorization'];
 
